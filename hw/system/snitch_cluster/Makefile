@@ -143,6 +143,8 @@ PLATFORM_HEADERS = $(addprefix $(PLATFORM_HEADERS_DIR)/,$(CLUSTER_GEN_HEADERS) $
 .PHONY: sw clean-headers clean-sw
 
 sw: $(PLATFORM_HEADERS)
+	# data generation for softmax
+	$(MAKE) -C sw/apps/softmax/
 	$(MAKE) -C sw/
 
 clean-headers:
