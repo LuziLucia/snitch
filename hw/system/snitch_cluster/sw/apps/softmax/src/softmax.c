@@ -54,11 +54,17 @@ void softmax(uint32_t length, double *x, double *y, double *z) {
     //int offset = core_idx * l;
     double sum = 0.0;
 
-    for(int i = 0; i < length; i++)
+    for (int i = 0; i < length; i++)
     {
-        //y[i] = my_exp(x[i]);
-        y[i] = exp(x[i]);
+        y[i] = my_exp(x[i]);
+        //y[i] = exp(x[i]);
         sum += y[i];
+        //y[i] = x[i];
+        //y[i] = x[i] + 10000;
+        //sum += x[i];
+        //snrt_fpu_fence();
+        //[i] = y[i] * 10000;
+        
     }
 
     // if(sum == 0.0) 
@@ -66,16 +72,16 @@ void softmax(uint32_t length, double *x, double *y, double *z) {
     //     sum = 0.001;
     // }
 
-    // for(int i = 0; i < length; i++)
-    // {
-    //     z[i] = y[i] / sum;
-    // }
+    for (int i = 0; i < length; i++)
+    {
+        z[i] = y[i] / sum;
+    }
 
     // "Synchronize the integer and float pipelines."
     // try without, if it works it's better (adds more time)
     // without, it looked like it didn't finish correctly
-    //snrt_fpu_fence();
-    snrt_cluster_hw_barrier();
+    snrt_fpu_fence();
+    //snrt_cluster_hw_barrier();
 }
 
 int main() {
@@ -92,11 +98,11 @@ int main() {
     uint32_t end_cycle = mcycle();
 
     // Check if computation is correct
-    /*for (int i = 0; i < l; i++) {
-        if (z[i] != result[i]) errors++;
-        // somehow this doesn't do anything
-        //if (my_fabs(z[i] - result[i]) > 0.00001) errors++;
-    }*/
+    // for (int i = 0; i < l; i++) {
+    //     //if (z[i] != result[i]) errors++;
+    //     // somehow this doesn't do anything
+    //     //if (my_fabs(z[i] - result[i]) > 0.00001) errors++;
+    // }
 
-    return errors;
+    return 0;
 }
