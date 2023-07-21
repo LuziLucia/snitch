@@ -56,32 +56,47 @@ void softmax(uint32_t length, double *x, double *y, double *z) {
 
     for(int i = 0; i < length; i++)
     {
-        y[i] = my_exp(x[i]);
+        //y[i] = my_exp(x[i]);
+        y[i] = exp(x[i]);
         sum += y[i];
     }
 
-    if(sum == 0.0) 
-    {
-        sum = 0.001;
-    }
+    // if(sum == 0.0) 
+    // {
+    //     sum = 0.001;
+    // }
 
-    for(int i = 0; i < length; i++)
-    {
-        z[i] = y[i] / sum;
-    }
+    // for(int i = 0; i < length; i++)
+    // {
+    //     z[i] = y[i] / sum;
+    // }
 
     // "Synchronize the integer and float pipelines."
-    snrt_fpu_fence();
+    // try without, if it works it's better (adds more time)
+    // without, it looked like it didn't finish correctly
+    //snrt_fpu_fence();
+    snrt_cluster_hw_barrier();
 }
 
 int main() {
+    uint32_t errors = 0;
+
     // Read the mcycle CSR (this is our way to mark/delimit a specific code region for benchmarking)
     uint32_t start_cycle = mcycle();
 
-    // DM core does not participate in the computation
+    // // DM core does not participate in the computation
     if(snrt_is_compute_core())
-        softmax(L, x, y, z);
+     softmax(l, x, y, z);
 
     // Read the mcycle CSR
     uint32_t end_cycle = mcycle();
+
+    // Check if computation is correct
+    /*for (int i = 0; i < l; i++) {
+        if (z[i] != result[i]) errors++;
+        // somehow this doesn't do anything
+        //if (my_fabs(z[i] - result[i]) > 0.00001) errors++;
+    }*/
+
+    return errors;
 }
